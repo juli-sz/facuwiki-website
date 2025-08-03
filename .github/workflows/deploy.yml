@@ -1,0 +1,43 @@
+name: Deploy Quartz to GitHub Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # Paso 1: Checkout del repo Quartz
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Paso 2: Clonar tu vault (wik.is)
+      - name: Clone Vault
+        run: |
+          git clone https://github.com/juli-sz/wik.is.git content
+          rm -rf content/.obsidian  # Elimina configuración sensible
+
+      # Paso 3: Configurar Node.js
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # Paso 4: Instalar dependencias
+      - name: Install Dependencies
+        run: npm install
+
+      # Paso 5: Build del sitio
+      - name: Build
+        run: npm run build
+
+      # Paso 6: Desplegar a GitHub Pages
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          keep_files: false
